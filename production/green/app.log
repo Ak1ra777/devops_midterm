@@ -5,3 +5,4 @@ INFO:     Uvicorn running on http://127.0.0.1:8002 (Press CTRL+C to quit)
 INFO:     127.0.0.1:42096 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:42102 - "GET /api/health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:42102 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50032 - "GET /api/health HTTP/1.1" 200 OK
