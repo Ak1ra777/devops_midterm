@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+
+# Runtime logs
+logs/*.log
+*.log
+
+# Local production deployment copies
+production/
+
+# Environment files
+.env
+.env.local
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
