@@ -1,0 +1,81 @@
+# Workflow name shown in the GitHub Actions UI
+name: CI
+
+# Run this workflow on every push and every pull request
+on:
+  push:
+  pull_request:
+
+# A workflow is made of one or more jobs
+jobs:
+  # Backend job: checks the FastAPI/Python side
+  backend:
+    name: Backend tests and linting
+    runs-on: ubuntu-latest
+
+    # Run all shell commands from the backend folder
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      # Download the repository code into the GitHub Actions machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install uv so GitHub Actions can manage Python dependencies
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      # Install and activate Python 3.12
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Install backend dependencies, including dev tools like pytest and ruff
+      - name: Install backend dependencies
+        run: uv sync --all-groups
+
+      # Run Ruff to check Python code quality and style
+      - name: Run backend linting
+        run: uv run ruff check .
+
+      # Run Pytest to execute backend automated tests
+      - name: Run backend tests
+        run: uv run pytest
+
+  # Frontend job: checks the React/Vite side
+  frontend:
+    name: Frontend linting and build
+    runs-on: ubuntu-latest
+
+    # Run all shell commands from the frontend folder
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      # Download the repository code into the GitHub Actions machine
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install Node.js and enable npm dependency caching
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      # Install frontend dependencies exactly from package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci
+
+      # Run ESLint to check React/JavaScript code quality
+      - name: Run frontend linting
+        run: npm run lint
+
+      # Build the React app to make sure production compilation works
+      - name: Build frontend
+        run: npm run build
