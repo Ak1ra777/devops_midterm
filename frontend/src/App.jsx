@@ -10,7 +10,10 @@ import {
 } from 'react-router-dom'
 import './App.css'
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api'
+const API_ORIGIN = import.meta.env.DEV
+  ? 'http://127.0.0.1:8000'
+  : window.location.origin
+const API_BASE_URL = `${API_ORIGIN}/api`
 
 const STATUS_OPTIONS = ['pending', 'running', 'success', 'failed']
 const ENVIRONMENT_OPTIONS = ['staging', 'production']
@@ -260,7 +263,7 @@ function HealthCard({ health, loading }) {
       <p>
         {loading
           ? 'Waiting for /api/health.'
-          : 'Connected to http://127.0.0.1:8000/api/health.'}
+          : `Connected to ${API_BASE_URL}/health.`}
       </p>
     </article>
   )
