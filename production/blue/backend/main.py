@@ -1,8 +1,11 @@
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 
@@ -17,6 +20,9 @@ app.add_middleware(
 )
 
 STARTED_AT = datetime.now(UTC)
+FRONTEND_DIST_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+FRONTEND_ASSETS_DIR = FRONTEND_DIST_DIR / "assets"
+FRONTEND_INDEX_FILE = FRONTEND_DIST_DIR / "index.html"
 
 
 class DeploymentCreate(BaseModel):
@@ -90,3 +96,37 @@ def create_deployment(payload: DeploymentCreate):
     deployments.append(deployment)
 
     return deployment
+
+
+if FRONTEND_ASSETS_DIR.is_dir():
+    app.mount(
+        "/assets",
+        StaticFiles(directory=FRONTEND_ASSETS_DIR),
+        name="frontend-assets",
+    )
+
+
+def frontend_build_exists():
+    return FRONTEND_INDEX_FILE.is_file()
+
+
+@app.get("/{frontend_path:path}", include_in_schema=False)
+def serve_frontend(frontend_path: str):
+    if frontend_path == "api" or frontend_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if not frontend_build_exists():
+        raise HTTPException(status_code=404, detail="Not found")
+
+    frontend_root = FRONTEND_DIST_DIR.resolve()
+    requested_path = (FRONTEND_DIST_DIR / frontend_path).resolve()
+
+    try:
+        requested_path.relative_to(frontend_root)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Not found") from None
+
+    if requested_path.is_file():
+        return FileResponse(requested_path)
+
+    return FileResponse(FRONTEND_INDEX_FILE)
